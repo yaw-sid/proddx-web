@@ -2,8 +2,13 @@
   <aside ref="signIn" @click.self="close">
     <form @submit.prevent="submit">
       <h2>Sign In</h2>
-      <text-field v-model="email" type="email" class="form-control" placeholder="Company email" />
-      <text-field v-model="password" type="password" class="form-control" placeholder="Password" />
+      <div>
+        <app-alert color="danger" v-show="isInvalidEmail">Invalid email</app-alert>
+        <text-field v-model="email" type="email" class="form-control" placeholder="Company email" />
+      </div>
+      <div>
+        <text-field v-model="password" type="password" class="form-control" placeholder="Password" />
+      </div>
       <div class="flex justify-end">
         <app-button :loading="loading">Submit</app-button>
       </div>
@@ -13,13 +18,16 @@
 
 <script lang="ts">
 import Vue from 'vue';
+import AppAlert from "@/components/forms/AppAlert.vue";
 import AppButton from "@/components/forms/AppButton.vue";
 import TextField from "@/components/forms/TextField.vue";
 import { SignInData } from "@/models/authentication";
 import { signIn } from "@/services/authentication";
+import { emailValidation } from "@/utils/validations";
 
 export default Vue.extend({
   components: {
+    AppAlert,
     AppButton,
     TextField
   },
@@ -34,7 +42,8 @@ export default Vue.extend({
   data: () => ({
     email: "",
     password: "",
-    loading: false
+    loading: false,
+    isInvalidEmail: false
   }),
 
   watch: {
@@ -56,6 +65,12 @@ export default Vue.extend({
     async submit() {
       this.loading = true;
 
+      if (!emailValidation(this.email)) {
+        this.isInvalidEmail = true;
+        this.loading = false;
+        return;
+      }
+
       const data = new SignInData(this.email, this.password);
 
       try {
@@ -66,6 +81,10 @@ export default Vue.extend({
         this.loading = false;
         this.close();
       }
+
+      this.$router.push({
+        path: "/dashboard"
+      });
     }
   }
 });

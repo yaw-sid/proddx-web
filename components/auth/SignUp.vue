@@ -2,8 +2,14 @@
   <aside ref="signUp" @click.self="close">
     <form @submit.prevent="submit">
       <h2>Sign Up</h2>
-      <text-field v-model="name" type="text" class="form-control" placeholder="Company name" />
-      <text-field v-model="email" type="email" class="form-control" placeholder="Company email" />
+      <div>
+        <app-alert v-show="isInvalidName" color="danger">Invalid Company Name</app-alert>
+        <text-field v-model="name" type="text" class="form-control" placeholder="Company name" />
+      </div>
+      <div>
+        <app-alert v-show="isInvalidEmail" color="danger">Invalid email</app-alert>
+        <text-field v-model="email" type="email" class="form-control" placeholder="Company email" />
+      </div>
       <text-field v-model="password" type="password" class="form-control" placeholder="Password" />
       <div class="flex justify-end">
         <app-button :loading="loading">Submit</app-button>
@@ -14,13 +20,16 @@
 
 <script lang="ts">
 import Vue from 'vue';
+import AppAlert from "@/components/forms/AppAlert.vue";
 import AppButton from "@/components/forms/AppButton.vue";
 import TextField from "@/components/forms/TextField.vue";
 import { SignUpData } from "@/models/authentication";
 import { signUp } from "@/services/authentication";
+import { emailValidation, companyNameValidation } from "@/utils/validations";
 
 export default Vue.extend({
   components: {
+    AppAlert,
     AppButton,
     TextField
   },
@@ -36,7 +45,9 @@ export default Vue.extend({
     name: "",
     email: "",
     password: "",
-    loading: false
+    loading: false,
+    isInvalidName: false,
+    isInvalidEmail: false
   }),
 
   watch: {
@@ -57,6 +68,20 @@ export default Vue.extend({
 
     async submit() {
       this.loading = true;
+
+      let error = false;
+      if (!companyNameValidation(this.name)) {
+        this.isInvalidName = true;
+        error = true;
+      }
+      if (!emailValidation(this.email)) {
+        this.isInvalidEmail = true;
+        error = true;
+      }
+      if (error) {
+        this.loading = false;
+        return;
+      }
 
       const data = new SignUpData(this.name, this.email, this.password);
 
