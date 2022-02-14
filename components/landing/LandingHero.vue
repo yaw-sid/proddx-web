@@ -4,7 +4,7 @@
       <h1>Manage your customer <span>feedback</span></h1>
       <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Possimus minima nisi tenetur ex cupiditate odit reprehenderit nostrum alias voluptatem ipsam veritatis, harum dolor minus placeat, expedita doloribus quam quasi? Dolorem.</p>
       <div class="button-container">
-        <app-button>How it works</app-button>
+        <app-button to="#get-started">How it works</app-button>
       </div>
     </div>
 

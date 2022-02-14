@@ -20,7 +20,7 @@ export default Vue.extend({
 
 <style scoped>
 section {
-  @apply px-4 py-24;
+  @apply px-4 py-16;
 }
 
 .landing-join {

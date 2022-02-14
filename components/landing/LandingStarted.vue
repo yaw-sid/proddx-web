@@ -1,5 +1,5 @@
 <template>
-  <section>
+  <section id="get-started">
     <div class="landing-started">
       <h2>Get <span>Started</span></h2>
 
@@ -29,15 +29,15 @@ export default Vue.extend({
     steps: [
       {
         index: "1",
-        title: "Add Your Products",
+        title: "Register",
         text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Id, porro quibusdam praesentium maxime itaque consequatur natus a vel ratione at quos velit qui! Veritatis dolorum totam commodi perferendis, laborum cum!"
       }, {
         index: "2",
-        title: "Generate Feedback URL",
+        title: "Add Your Products",
         text: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis nulla iste voluptates, quidem tenetur modi at cumque, dignissimos fugiat nihil neque ipsa tempora voluptatum eos deleniti non. Aliquid, voluptatem placeat."
       }, {
         index: "3",
-        title: "View and Manage Feedback",
+        title: "Generate Feedback URL",
         text: "Lorem ipsum dolor, sit amet consectetur adipisicing elit. Fuga maiores eligendi, temporibus maxime ipsum, at ab alias voluptatem inventore odio nihil! Accusantium obcaecati possimus neque modi tempore laborum, iusto nam?"
       }
     ]

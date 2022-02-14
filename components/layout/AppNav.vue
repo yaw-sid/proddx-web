@@ -2,23 +2,56 @@
   <div class="app-nav">
     <nav>
       <div class="brand">
-        <div class="logo"></div>
+        <nuxt-link class="logo" to="/"></nuxt-link>
       </div>
 
       <div class="actions">
-        <app-button>Sign Up</app-button>
+        <app-button type="text" @click.native="displaySignIn">Sign In</app-button>
+        <app-button @click.native="displaySignUp">Sign Up</app-button>
       </div>
     </nav>
+
+    <sign-in :show="showSignIn" @close="closeSignIn" />
+    <sign-up :show="showSignUp" @close="closeSignUp" />
   </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import AppButton from "@/components/forms/AppButton.vue"
+import Vue from 'vue';
+import AppButton from "@/components/forms/AppButton.vue";
+import SignIn from "@/components/auth/SignIn.vue";
+import SignUp from "@/components/auth/SignUp.vue";
 
 export default Vue.extend({
-  components: { AppButton }  
-})
+  components: { 
+    AppButton,
+    SignIn,
+    SignUp 
+  },
+
+  data: () => ({
+    showSignIn: false,
+    showSignUp: false
+  }),
+
+  methods: {
+    displaySignIn() {
+      this.showSignIn = true;
+    },
+
+    closeSignIn() {
+      this.showSignIn = false;
+    },
+
+    displaySignUp() {
+      this.showSignUp = true;
+    },
+
+    closeSignUp() {
+      this.showSignUp = false;
+    }
+  }
+});
 </script>
 
 <style scoped>
@@ -27,6 +60,6 @@ nav {
 }
 
 .logo {
-  @apply h-16 w-16 rounded-full bg-gray-600;
+  @apply block h-16 w-16 rounded-full bg-gray-600;
 }
 </style>
