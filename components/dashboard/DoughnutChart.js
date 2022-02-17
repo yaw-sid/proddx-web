@@ -10,14 +10,25 @@ export default {
     chartLabels: {
       type: Array,
       required: true
+    },
+    chartTitle: {
+      type: String,
+      required: true
     }
   },
 
   data: () => ({
-    options: {}  
+    options: {
+      title: {
+        display: true,
+        fontFamily: "'Montserrat', sans-serif",
+        text: ""
+      }
+    }  
   }),
 
   mounted() {
+    this.options.title.text = this.chartTitle;
     this.renderChart({
       labels: this.chartLabels,
       datasets: [

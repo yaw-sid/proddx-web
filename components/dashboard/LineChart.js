@@ -10,6 +10,10 @@ export default {
     chartLabels: {
       type: Array,
       required: true
+    },
+    chartTitle: {
+      type: String,
+      required: true
     }
   },
   data: () => ({
@@ -38,6 +42,11 @@ export default {
       legend: {
         display: false
       },
+      title: {
+        display: true,
+        fontFamily: "'Montserrat', sans-serif",
+        text: ""
+      },
       responsive: true,
       maintainAspectRatio: false
     }
@@ -51,6 +60,7 @@ export default {
     this.gradient.addColorStop(0, 'rgba(37, 99, 235, 0.6)');
     this.gradient.addColorStop(0.5, 'rgba(37, 99, 235, 0.25)');
     this.gradient.addColorStop(1, 'rgba(37, 99, 235, 0)');
+    this.options.title.text = this.chartTitle;
     this.renderChart({
       labels: this.chartLabels,
       datasets: [

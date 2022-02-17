@@ -4,6 +4,8 @@
     :type="type"
     :placeholder="placeholder"
     :value="value"
+    :disabled="disabled"
+    :class="disabled ? 'text-gray-600' : ''"
     ref="textField"
     @input="handleInput"
   />
@@ -29,6 +31,10 @@ export default Vue.extend({
     value: {
       type: String,
       default: ""
+    },
+    disabled: {
+      type: Boolean,
+      default: false
     }
   },
 

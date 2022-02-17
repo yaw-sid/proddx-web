@@ -12,10 +12,10 @@
 
     <div class="charts">
       <div>
-        <line-chart class="w-full" :chart-data="points" :chart-labels="labels" />
+        <line-chart class="w-full" :chart-data="points" :chart-labels="labels" chart-title="Past 5 days" />
       </div>
       <div>
-        <doughnut-chart :chart-data="piePoints" :chart-labels="pieLabels" />
+        <doughnut-chart :chart-data="piePoints" :chart-labels="pieLabels" chart-title="Reviews per category" />
       </div>
     </div>
   </section>
@@ -42,22 +42,22 @@ export default Vue.extend({
   }),
 
   computed: {
-    products() {
+    products(): Product[] {
       return this.$store.getters["products/getProducts"];
     },
 
-    reviews() {
+    reviews(): Review[] {
       return this.$store.getters["reviews/getReviews"]
         .filter((r: Review) => (r.product === this.currentProduct.id) && (Date.now() - r.date_created.getTime() < (5 * 24 * 60 * 60 * 1000)))
         .sort((a: Review, b: Review) => a.date_created .getTime() - b.date_created.getTime());
     },
 
-    categories() {
+    categories(): Category[] {
       return this.$store.getters["categories/getCategories"]
         .filter((c: Category) => c.product === this.currentProduct.id);
     },
 
-    chartData() {
+    chartData(): any {
       return this.reviews.reduce((prev: any, curr: Review) => {
         const key = curr.date_created.toLocaleString().substring(0, 10);
         // eslint-disable-next-line no-prototype-builtins
@@ -69,15 +69,15 @@ export default Vue.extend({
       }, {});
     },
 
-    labels() {
+    labels(): string[] {
       return Object.keys(this.chartData);
     },
 
-    points() {
+    points(): string[] {
       return Object.keys(this.chartData).map(k => this.chartData[k]);
     },
 
-    pieData() {
+    pieData(): any {
       return this.categories.reduce((prev: any, curr: Category) => {
         const key = curr.label;
         // eslint-disable-next-line no-prototype-builtins
@@ -89,11 +89,11 @@ export default Vue.extend({
       }, {});
     },
 
-    pieLabels() {
+    pieLabels(): string[] {
       return Object.keys(this.pieData);
     },
 
-    piePoints() {
+    piePoints(): string[] {
       return Object.keys(this.pieData).map(k => this.pieData[k]);
     }
   },
