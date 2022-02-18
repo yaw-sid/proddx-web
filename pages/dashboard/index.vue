@@ -6,6 +6,7 @@
 
       <dashboard-overview v-if="tabName == 'Overview'" />
       <dashboard-products v-else-if="tabName == 'Products'" />
+      <dashboard-reviews v-else-if="tabName == 'Reviews'" />
     </div>
   </article>
 </template>
@@ -16,13 +17,15 @@ import DashboardNav from "@/components/dashboard/DashboardNav.vue";
 import DashboardHeader from "@/components/dashboard/DashboardHeader.vue";
 import DashboardOverview from "@/components/dashboard/DashboardOverview.vue";
 import DashboardProducts from "@/components/dashboard/DashboardProducts.vue";
+import DashboardReviews from "@/components/dashboard/DashboardReviews.vue";
 
 export default Vue.extend({
   components: {
     DashboardNav,
     DashboardHeader,
     DashboardOverview,
-    DashboardProducts
+    DashboardProducts,
+    DashboardReviews
   },
 
   data: () => ({

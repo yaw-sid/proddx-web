@@ -2,7 +2,7 @@ import { Category } from "~/models/category";
 import { listCategories } from "~/services/categories";
 
 export const state = () => ({
-    categories: []
+    categories: [] as Category[]
 });
 
 export const mutations = {

@@ -1,29 +1,33 @@
 <template>
   <section>
-    <div class="brand">
-      <div>
-        <div class="image-container">
-          <div class="image"></div>
+    <div>
+      <div class="brand">
+        <div>
+          <div class="image-container">
+            <div class="image"></div>
+          </div>
+          <p class="name">Proddx</p>
         </div>
-        <p class="name">Proddx</p>
+      </div>
+
+      <div class="tab active" @click="changeTab(0)">
+        <span class="material-icons">home</span>
+        <p>Home</p>
+      </div>
+      <div class="tab" @click="changeTab(1)">
+        <span class="material-icons">inventory_2</span>
+        <p>Products</p>
+      </div>
+      <div class="tab" @click="changeTab(2)">
+        <span class="material-icons">reviews</span>
+        <p>Reviews</p>
       </div>
     </div>
-
-    <div class="tab active" @click="changeTab(0)">
-      <span class="material-icons">home</span>
-      <p>Home</p>
-    </div>
-    <div class="tab" @click="changeTab(1)">
-      <span class="material-icons">inventory_2</span>
-      <p>Products</p>
-    </div>
-    <div class="tab" @click="changeTab(2)">
-      <span class="material-icons">reviews</span>
-      <p>Reviews</p>
-    </div>
-    <div class="tab" @click="changeTab(3)">
-      <span class="material-icons">account_circle</span>
-      <p>Account</p>
+    <div>
+      <div class="tab" @click="logout()">
+        <span class="material-icons">logout</span>
+        <p>Logout</p>
+      </div>
     </div>
   </section>
 </template>
@@ -42,6 +46,18 @@ export default Vue.extend({
       tabs[index].classList.add("active");
       this.currentTab = index;
       this.$emit("changeTab", this.currentTab);
+    },
+
+    async logout() {
+      try {
+        await this.$store.dispatch("companies/logout");
+        this.$router.push({
+          path: "/"
+        });
+      } catch (error) {
+        console.error(error);
+        this.$toast.error("Failed to logout!");
+      }
     }
   }
 });
@@ -49,7 +65,7 @@ export default Vue.extend({
 
 <style scoped>
 section {
-  @apply h-screen bg-gray-100 pt-12;
+  @apply flex flex-col justify-between min-h-screen bg-gray-100 pt-12;
 }
 
 .brand {

@@ -10,7 +10,7 @@
         <app-alert v-show="isInvalidEmail" color="danger">Invalid email</app-alert>
         <text-field v-model="email" type="email" class="form-control" placeholder="Company email" />
       </div>
-      <text-field v-model="password" type="password" class="form-control" placeholder="Password" />
+      <text-field v-model="password" type="password" class="form-control password" placeholder="Password" />
       <div class="flex justify-end">
         <app-button :loading="loading">Submit</app-button>
       </div>
@@ -123,5 +123,23 @@ h2 {
 
 .form-control {
   @apply w-full mb-4;
+}
+
+.password {
+  @apply tracking-wide;
+  
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.password::placeholder {
+  font-family: 'Montserrat', sans-serif;
+}
+
+.password:-ms-input-placeholder {
+  font-family: 'Montserrat', sans-serif;
+}
+
+.password::-ms-input-placeholder {
+  font-family: 'Montserrat', sans-serif;
 }
 </style>

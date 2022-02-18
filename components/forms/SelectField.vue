@@ -1,26 +1,24 @@
 <template>
-  <input 
+  <select 
     :id="id"
-    :type="type"
-    :placeholder="placeholder"
+    ref="selectField"
     :value="value"
     :disabled="disabled"
     :class="disabled || !value ? 'text-gray-600' : ''"
-    ref="textField"
     @input="handleInput"
-  />
+  >
+    <option disabled selected hidden value="">{{ placeholder }}</option>
+    <option v-for="(option, index) in options" :key="index" :value="option.value">
+      {{ option.text }}
+    </option>
+  </select>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
-
 export default Vue.extend({
   props: {
     id: {
-      type: String,
-      default: ""
-    },
-    type: {
       type: String,
       default: ""
     },
@@ -35,19 +33,23 @@ export default Vue.extend({
     disabled: {
       type: Boolean,
       default: false
+    },
+    options: {
+      type: Array,
+      default: []
     }
   },
 
   methods: {
     handleInput() {
-      this.$emit("input", (<HTMLInputElement>this.$refs.textField).value);
+      this.$emit("input", (<HTMLSelectElement>this.$refs.selectField).value);
     }
   }
 });
 </script>
 
 <style scoped>
-input {
+select {
   @apply p-4 rounded border border-transparent outline-none transition bg-gray-50 focus:bg-white focus:border-blue-600;
 }
 </style>

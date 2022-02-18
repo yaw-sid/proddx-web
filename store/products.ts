@@ -2,7 +2,7 @@ import { Product } from "~/models/product";
 import { createProduct, listProducts } from "~/services/products";
 
 export const state = () => ({
-    products: []
+    products: [] as Product[]
 });
 
 export const mutations = {
