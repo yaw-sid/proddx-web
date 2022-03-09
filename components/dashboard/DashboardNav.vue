@@ -4,9 +4,8 @@
       <div class="brand">
         <div>
           <div class="image-container">
-            <div class="image"></div>
+            <img src="~/static/logo.png" alt="Logo">
           </div>
-          <p class="name">Proddx</p>
         </div>
       </div>
 
@@ -51,9 +50,11 @@ export default Vue.extend({
     async logout() {
       try {
         await this.$store.dispatch("companies/logout");
-        this.$router.push({
+        localStorage.removeItem("proddx_token");
+        /* this.$router.push({
           path: "/"
-        });
+        }); */
+        location.pathname = "/";
       } catch (error) {
         console.error(error);
         this.$toast.error("Failed to logout!");
@@ -76,8 +77,10 @@ section {
   @apply flex items-center gap-4;
 }
 
-.image {
-  @apply w-16 h-16 rounded-full bg-blue-500;
+.image-container img {
+  @apply w-16 h-16;
+  object-fit: contain;
+  object-position: center;
 }
 
 .tab {

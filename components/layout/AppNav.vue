@@ -2,7 +2,9 @@
   <div class="app-nav">
     <nav>
       <div class="brand">
-        <nuxt-link class="logo" to="/"></nuxt-link>
+        <nuxt-link class="logo" to="/">
+          <img src="~/static/logo.png" alt="Logo">
+        </nuxt-link>
       </div>
 
       <div class="actions">
@@ -59,7 +61,9 @@ nav {
   @apply flex justify-between items-center p-4 md:px-8 lg:max-w-screen-2xl lg:mx-auto lg:px-12;
 }
 
-.logo {
-  @apply block h-16 w-16 rounded-full bg-gray-600;
+.logo img {
+  @apply w-16 h-16;
+  object-fit: contain;
+  object-position: center;
 }
 </style>

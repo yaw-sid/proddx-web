@@ -2,18 +2,18 @@ export class Review {
     public id: string;
     public rating: number;
     public comment: string;
-    public product: string;
-    public company: string;
+    public product_id: string;
+    public company_id: string;
     public relevance: number;
-    public date_created: Date;
+    public created_at: Date;
 
     constructor(id: string, rating: number, comment: string, product: string, company: string, relevance: number, date: Date) {
         this.id = id;
         this.rating = rating;
         this.comment = comment;
-        this.product = product;
-        this.company = company;
+        this.product_id = product;
+        this.company_id = company;
         this.relevance = relevance;
-        this.date_created = date;
+        this.created_at = date;
     }
 }

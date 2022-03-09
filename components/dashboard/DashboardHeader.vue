@@ -55,7 +55,6 @@ export default Vue.extend({
     loading: true,
     showCompanyDetails: false,
     currentCompany: new Company("", "", "", ""),
-    defaultCompany: new Company("", "", "", ""),
     disabled: true,
     saving: false
   }),
@@ -63,13 +62,21 @@ export default Vue.extend({
   computed: {
     company(): Company {
       return this.$store.getters["companies/getCompany"];
+    },
+    token() {
+      return localStorage.getItem("proddx_token") || "";
     }
   },
 
   async mounted() {
     if (!this.company.name) {
       try {
-        await this.$store.dispatch("companies/loadCompany", "1");
+        const userId = JSON.parse(atob(this.token.split(".")[1])).id;
+        await this.$store.dispatch("companies/loadCompany", {
+          id: userId,
+          token: this.token
+        });
+        this.currentCompany = Object.assign({}, this.company);
       } catch (error) {
         console.error(error);
         this.$toast.error("Failed to load company data!");
@@ -77,20 +84,19 @@ export default Vue.extend({
         this.loading = false;
       }
     } else {
+      this.currentCompany = Object.assign({}, this.company);
       this.loading = false;
     }
   },
 
   methods: {
     displayCompanyDetails() {
-      this.currentCompany = Object.assign({}, this.company);
       this.showCompanyDetails = true;
     },
 
     closeCompanyDetails() {
       this.showCompanyDetails = false;
       this.disabled = true;
-      this.currentCompany = Object.assign({}, this.defaultCompany);
     },
 
     editCompanyName() {
@@ -101,7 +107,10 @@ export default Vue.extend({
       this.saving = true;
 
       try {
-        await this.$store.dispatch("companies/editCompany", this.currentCompany);
+        await this.$store.dispatch("companies/editCompany", {
+          company: this.currentCompany,
+          token: this.token
+        });
         this.$toast.success("Successful!");
         this.closeCompanyDetails();
       } catch (error) {

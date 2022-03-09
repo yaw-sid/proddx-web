@@ -54,10 +54,6 @@ export default Vue.extend({
 </script>
 
 <style scoped>
-body {
-  font-family: 'Montserrat', sans-serif;
-}
-
 article {
   @apply flex;
 }

@@ -5,7 +5,7 @@
     <modal-window :show="showReviewDetails" @close="closeReviewDetails">
       <div class="m-content">
         <div class="heading">
-          <h2>{{ currentReview.id }}</h2>
+          <h2>{{ currentReview.id.substring(0, 8) }}</h2>
           <div class="rating">
             <span v-for="n in currentReview.rating" :key="n" class="material-icons">star</span>
           </div>
@@ -19,7 +19,7 @@
     </modal-window>
 
     <!-- Main Window -->
-    <p class="mb-4">{{ filteredReviews.length }} reviews found</p>
+    <p class="mb-4">{{ filteredReviews.length + ` review${filteredReviews.length != 1 ? 's' : ''}` }}  found</p>
 
     <div class="filter">
       <div>
@@ -50,12 +50,12 @@
       </thead>
       <tbody>
         <tr v-for="review in paginatedReviews" :key="review.id" @click="displayReviewDetails(review)">
-          <td>{{ review.id }}</td>
+          <td>{{ review.id.substring(0, 8) }}</td>
           <td>{{ review.comment }}</td>
           <td>
             <span v-for="n in review.rating" :key="n" class="material-icons">star</span>
           </td>
-          <td>{{ review.date_created.toLocaleString().substring(0, 10) }}</td>
+          <td>{{ review.created_at.toLocaleString().substring(0, 10) }}</td>
         </tr>
       </tbody>
       <tfoot>
@@ -97,6 +97,7 @@ import SelectField from "@/components/forms/SelectField.vue";
 import TextField from "@/components/forms/TextField.vue";
 import { Product } from '~/models/product';
 import { Review } from '~/models/review';
+import { Company } from '~/models/company';
 
 export default Vue.extend({
   components: {
@@ -136,14 +137,18 @@ export default Vue.extend({
   }),
 
   computed: {
+    company(): Company {
+      return this.$store.getters["companies/getCompany"];
+    },
+
     products(): Product[] {
       return this.$store.getters["products/getProducts"]
-        .filter((p: Product) => p.company === "1");
+        .filter((p: Product) => p.company_id === this.company.id);
     },
 
     reviews(): Review[] {
       return this.$store.getters["reviews/getReviews"]
-        .filter((r: Review) => r.company === "1");
+        .filter((r: Review) => r.company_id === this.company.id);
     },
 
     filteredReviews(): Review[] {
@@ -151,10 +156,10 @@ export default Vue.extend({
         .sort((a, b) => {
           if (this.sortCriterion === "rating") {
             return b.rating - a.rating;
-          } else if (this.sortCriterion === "relevance") {
+          }/*  else if (this.sortCriterion === "relevance") {
             return b.relevance - a.relevance;
-          } else if (this.sortCriterion === "recent") {
-            return b.date_created.getTime() - a.date_created.getTime();
+          } */ else if (this.sortCriterion === "recent") {
+            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
           }
           return -1;
         });
@@ -183,16 +188,27 @@ export default Vue.extend({
           value: p.id
         }
       });
+    },
+    
+    token() {
+      return localStorage.getItem("proddx_token") || "";
     }
   },
 
   async mounted() {
     const promises = [];
+    if (!this.company.name) {
+      const userId = JSON.parse(atob(this.token.split(".")[1])).id;
+      await this.$store.dispatch("companies/loadCompany", {
+        id: userId,
+        token: this.token
+      }).catch(error => this.$toast.error(error));
+    }
     if (!this.products.length) {
-      promises.push(this.$store.dispatch("products/loadProducts", "1"))
+      promises.push(this.$store.dispatch("products/loadProducts", { companyId: this.company.id, token: this.token }));
     }
     if (!this.reviews.length) {
-      promises.push(this.$store.dispatch("reviews/loadReviews", "1"))
+      promises.push(this.$store.dispatch("reviews/loadReviews", { companyId: this.company.id, token: this.token }));
     }
 
     try {
@@ -207,21 +223,21 @@ export default Vue.extend({
   methods: {
     filterByProduct(reviews: Review[]) {
       if (this.product) {
-        return reviews.filter((r) => r.product === this.product);
+        return reviews.filter((r) => r.product_id === this.product);
       }
       return reviews;
     },
 
     filterFromDate(reviews: Review[]) {
       if (this.fromDate) {
-        return reviews.filter((r) => r.date_created.getTime() >= new Date(this.fromDate).getTime());
+        return reviews.filter((r) => new Date(r.created_at).getTime() >= new Date(this.fromDate).getTime());
       }
       return reviews;
     },
 
     filterToDate(reviews: Review[]) {
       if (this.toDate) {
-        return reviews.filter((r) => r.date_created.getTime() <= new Date(this.toDate).getTime());
+        return reviews.filter((r) => new Date(r.created_at).getTime() <= new Date(this.toDate).getTime());
       }
       return reviews;
     },
@@ -252,7 +268,7 @@ export default Vue.extend({
       this.deleting = true;
       
       try {
-        await this.$store.dispatch("reviews/removeReview", this.currentReview.id);
+        await this.$store.dispatch("reviews/removeReview", { reviewId: this.currentReview.id, token: this.token });
         this.$toast.success("Successful!");
         this.closeReviewDetails();
       } catch (error) {

@@ -23,19 +23,19 @@ export const getters = {
 };
 
 export const actions = {
-    async loadReviews({ commit }: { commit: any }, companyId: string) {
+    async loadReviews({ commit }: { commit: any }, payload: { companyId: string, token: string }) {
         try {
-            const reviews = await listReviews(companyId);
-            commit("updateReviews", reviews);
+            const response = await listReviews(payload.companyId, payload.token);
+            commit("updateReviews", response.data);
         } catch (error: any) {
             throw new Error(error);
         }
     },
 
-    async removeReview({ commit }: { commit: any }, reviewId: string) {
+    async removeReview({ commit }: { commit: any }, payload: { reviewId: string, token: string }) {
         try {
-            await deleteReview(reviewId);
-            commit("deleteReview", reviewId);
+            await deleteReview(payload.reviewId, payload.token);
+            commit("deleteReview", payload.reviewId);
         } catch (error: any) {
             throw new Error(error);
         }

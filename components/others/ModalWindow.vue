@@ -1,5 +1,5 @@
 <template>
-  <aside ref="modal" @click.self="close">
+  <aside :id="id" ref="modal" @click.self="close">
     <slot class="content"/>
   </aside>
 </template>
@@ -11,6 +11,10 @@ export default Vue.extend({
     show: {
       type: Boolean,
       default: false
+    },
+    id: {
+      type: String,
+      default: ""
     }
   },
 

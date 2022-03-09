@@ -30,13 +30,3 @@ export default Vue.extend({
   }
 });
 </script>
-
-<style>
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  font-family: 'Montserrat', sans-serif;
-}
-</style>

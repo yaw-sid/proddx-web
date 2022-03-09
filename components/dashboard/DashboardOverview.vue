@@ -1,21 +1,12 @@
 <template>
   <div v-if="loading"></div>
   <section v-else>
-    <div class="products">
-      <div 
-        v-for="product in products" 
-        :key="product.id" 
-        :class="`product ${product.id == currentProduct.id ? 'active' : ''}`"
-        @click="changeProduct(product)"
-      >{{ product.name }}</div>
-    </div>
-
     <div class="charts">
       <div>
         <line-chart class="w-full" :chart-data="points" :chart-labels="labels" chart-title="Past 5 days" />
       </div>
       <div>
-        <doughnut-chart :chart-data="piePoints" :chart-labels="pieLabels" chart-title="Reviews per category" />
+        <doughnut-chart :chart-data="piePoints" :chart-labels="pieLabels" chart-title="Reviews per product" />
       </div>
     </div>
   </section>
@@ -23,7 +14,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { Category } from "@/models/category";
+import { Company } from '~/models/company';
 import { Product } from "@/models/product";
 import { Review } from "@/models/review";
 
@@ -37,49 +28,41 @@ export default Vue.extend({
   },
 
   data: () => ({
-    loading: true,
-    currentProduct: new Product("", "", "", "", 0)
+    loading: true
   }),
 
   computed: {
+    company(): Company {
+      return this.$store.getters["companies/getCompany"];
+    },
+
     products(): Product[] {
-      return this.$store.getters["products/getProducts"];
+      return this.$store.getters["products/getProducts"].filter((p: Product) => p.company_id === this.company.id);
     },
 
     reviews(): Review[] {
       return this.$store.getters["reviews/getReviews"]
-        .filter((r: Review) => (r.product === this.currentProduct.id) && (Date.now() - r.date_created.getTime() < (5 * 24 * 60 * 60 * 1000)))
-        .sort((a: Review, b: Review) => a.date_created .getTime() - b.date_created.getTime());
-    },
-
-    categories(): Category[] {
-      return this.$store.getters["categories/getCategories"]
-        .filter((c: Category) => c.product === this.currentProduct.id);
-    },
-
-    chartData(): any {
-      return this.reviews.reduce((prev: any, curr: Review) => {
-        const key = curr.date_created.toLocaleString().substring(0, 10);
-        // eslint-disable-next-line no-prototype-builtins
-        if (!prev.hasOwnProperty(key)) {
-          prev[key] = 0;
-        }
-        prev[key]++;
-        return prev;
-      }, {});
+        .filter((r: Review) => (r.company_id === this.company.id) && (Date.now() - new Date(r.created_at).getTime() <= (5 * 24 * 60 * 60 * 1000)))
+        .sort((a: Review, b: Review) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
     },
 
     labels(): string[] {
-      return Object.keys(this.chartData);
+      const dates: string[] = [];
+      const currentDate = new Date(Date.now() - 4*24*60*60*1000);
+      for (let i = 0; i < 5; i++) {
+        dates.push(currentDate.toLocaleString().substring(0, 10));
+        currentDate.setTime(currentDate.getTime() + 24*60*60*1000);
+      }
+      return dates;
     },
 
-    points(): string[] {
-      return Object.keys(this.chartData).map(k => this.chartData[k]);
+    points(): number[] {
+      return this.labels.map((date) => this.reviews.filter((r) => new Date(r.created_at).toLocaleString().substring(0, 10) === date).length);
     },
 
     pieData(): any {
-      return this.categories.reduce((prev: any, curr: Category) => {
-        const key = curr.label;
+      return this.reviews.reduce((prev: any, curr: Review) => {
+        const key = this.getProductName(curr.product_id);
         // eslint-disable-next-line no-prototype-builtins
         if (!prev.hasOwnProperty(key)) {
           prev[key] = 0;
@@ -95,36 +78,42 @@ export default Vue.extend({
 
     piePoints(): string[] {
       return Object.keys(this.pieData).map(k => this.pieData[k]);
+    },
+    
+    token() {
+      return localStorage.getItem("proddx_token") || "";
     }
   },
 
   async mounted() {
-    const promises = [];
+    const promises: Promise<any>[] = [];
+    if (!this.company.name) {
+      const userId = JSON.parse(atob(this.token.split(".")[1])).id;
+      await this.$store.dispatch("companies/loadCompany", {
+        id: userId,
+        token: this.token
+      }).catch(error => this.$toast.error(error));
+    }
     if (!this.products.length) {
-      promises.push(this.$store.dispatch("products/loadProducts", "1"));
+      promises.push(this.$store.dispatch("products/loadProducts", { companyId: this.company.id, token: this.token }));
     }
     if (!this.reviews.length) {
-      promises.push(this.$store.dispatch("reviews/loadReviews", "1"));
-    }
-    if (!this.categories.length) {
-      promises.push(this.$store.dispatch("categories/loadCategories", "1"));
+      promises.push(this.$store.dispatch("reviews/loadReviews", { companyId: this.company.id, token: this.token }));
     }
 
     if (promises.length > 0) {
       await Promise.all(promises).catch((err: any) => {
-        // eslint-disable-next-line no-console
         console.error(err);
         this.$toast.error("Failed to load data!");
       });
     }
 
-    this.currentProduct = this.products[0];
     this.loading = false;
   },
 
   methods: {
-    changeProduct(p: Product) {
-      this.currentProduct = p;
+    getProductName(productId: string) {
+      return this.products.find(p => p.id === productId)?.name || "";
     }
   }
 });

@@ -1,20 +1,21 @@
+import axios from "./api-client";
 import { SignInData, SignUpData } from "~/models/authentication";
 
 const signIn = (payload: SignInData) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            resolve(payload)
-        }, 1500);
+    return axios.post("/login", payload, {
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "text/plain, application/json"
+        }
     });
 };
 
 const signUp = (payload: SignUpData) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            resolve(payload)
-        }, 1500);
+    return axios.post("/register", payload, {
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "text/plain, application/json"
+        }
     });
 };
 

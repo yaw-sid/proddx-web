@@ -1,5 +1,5 @@
 import { Company } from "~/models/company";
-import { getCompanyDetails } from "~/services/companies";
+import { getCompanyDetails, updateCompany } from "~/services/companies";
 
 export const state = () => ({
     company: {} as Company
@@ -22,10 +22,19 @@ export const getters = {
 };
 
 export const actions = {
-    async loadCompany({ commit }: { commit: any }, companyId: string) {
+    async loadCompany({ commit }: { commit: any }, payload: { id: string, token: string }) {
         try {
-            const company = await getCompanyDetails(companyId);
-            commit("updateCompany", company);
+            const response = await getCompanyDetails(payload.id, payload.token);
+            commit("updateCompany", response.data);
+        } catch (error: any) {
+            throw new Error(error);
+        }
+    },
+
+    async editCompany({ commit }: { commit: any }, payload: { company: Company, token: string }) {
+        try {
+            const response = await updateCompany(payload.company, payload.token);
+            commit("updateCompany", response.data);
         } catch (error: any) {
             throw new Error(error);
         }

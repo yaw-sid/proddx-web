@@ -1,22 +1,39 @@
+import axios from "./api-client";
 import { Product } from "~/models/product";
 
-export function createProduct(p: Product): Promise<Product> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            resolve(p);
-        }, 1000);
+export function createProduct(p: Product, token: string) {
+    return axios.post("/products", p, {
+        headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+            "Accept": "text/plain, application/json"
+        }
     });
-}
+};
 
-export function listProducts(companyId: string): Promise<Array<Product>> {
-    const products: Array<Product> = [];
-    for (let i = 0; i < 6; i++) {
-        products.push(new Product(`${i+1}`, `Product ${i+1}`, `${(i%3) + 1}`, "http://example.com", Math.floor(Math.random() * 10) % 6));
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return new Promise((resolve, reject) => {
-        resolve(products.filter(p => p.company === companyId));
+export function listProducts(companyId: string, token: string) {
+    return axios.get(`/products?company_id=${companyId}`, {
+        headers: {
+            "Authorization": `Bearer ${token}`,
+            "Accept": "text/plain, application/json"
+        }
     });
-}
+};
+
+export function updateProduct(p: Product, token: string) {
+    return axios.put(`/products/${p.id}`, p, {
+        headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+            "Accept": "text/plain, application/json"
+        }
+    });
+};
+
+export function deleteProduct(productId: string, token: string) {
+    return axios.delete(`/products/${productId}`, {
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    });
+};

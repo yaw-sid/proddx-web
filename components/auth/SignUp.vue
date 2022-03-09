@@ -87,11 +87,13 @@ export default Vue.extend({
 
       try {
         await signUp(data);
+        this.close();
+        this.$toast.success("Successful! Please login");
       } catch (error) {
         console.error(error);
+        this.$toast.error("Failed to sign up! Please try again");
       } finally {
         this.loading = false;
-        this.close();
       }
     }
   }

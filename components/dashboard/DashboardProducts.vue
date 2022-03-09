@@ -2,7 +2,7 @@
   <div v-if="loading"></div>
   <section v-else>
     <!-- Modal Window -->
-    <modal-window :show="displayProductModal" @close="closeProductModal()">
+    <modal-window id="modal" :show="displayProductModal" @close="closeProductModal()">
       <div class="m-content">
         <app-alert v-if="invalidName" color="danger">Invalid Product name</app-alert>
         <div class="heading">
@@ -23,13 +23,14 @@
         <template v-if="currentProduct.feedback_url">
           <h3>Feedback URL</h3>
           <div class="image-container">
-            <div class="qr-code"></div>
+            <qrcode-vue v-if="displayProductModal" :value="currentProduct.feedback_url" :size="150" level="H" />
           </div>
           <div class="url">
-            <text-field v-model="currentProduct.feedback_url" :disabled="true" />
-            <app-button color="primary" type="text">
+            <text-field id="feedback-input" v-model="currentProduct.feedback_url" :disabled="true" />
+            <app-button color="primary" type="text" @click.native="copyToClipboard()">
               <span class="material-icons">content_copy</span>
             </app-button>
+            <div v-if="copied" class="copied">Copied!</div>
           </div>
         </template>
 
@@ -74,6 +75,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
+import QrcodeVue from 'qrcode.vue'
 import AppAlert from "@/components/forms/AppAlert.vue";
 import AppButton from "@/components/forms/AppButton.vue";
 import ModalWindow from "@/components/others/ModalWindow.vue";
@@ -81,59 +83,73 @@ import TextField from "@/components/forms/TextField.vue";
 import { Product } from '~/models/product';
 import { Review } from '~/models/review';
 import { companyNameValidation } from "@/utils/validations";
+import { Company } from '~/models/company';
 
 export default Vue.extend({
   components: {
     AppAlert,
     AppButton,
     ModalWindow,
-    TextField
+    TextField,
+    QrcodeVue
   },
 
   data: () => ({
     loading: true,
     saving: false,
     productName: "",
-    filteredProducts: [] as Product[],
     currentProduct: new Product("", "", "", "", 0),
     defaultProduct: new Product("", "", "", "", 0),
     displayProductModal: false,
     disabled: false,
-    invalidName: false
+    invalidName: false,
+    copied: false,
   }),
 
   computed: {
+    company(): Company {
+      return this.$store.getters["companies/getCompany"];
+    },
+
     products(): Product[] {
       return this.$store.getters["products/getProducts"]
-        .filter((p: Product) => p.company === "1");
+        .filter((p: Product) => p.company_id === this.company.id);
+    },
+
+    filteredProducts(): Product[] {
+      return this.filterByName(this.products);
     },
 
     reviews(): Review[] {
       return this.$store.getters["reviews/getReviews"]
-        .filter((r: Review) => r.company === "1");
-    }
-  },
-
-  watch: {
-    productName(val: string) {
-      const condition = new RegExp(val, "i");
-      this.filteredProducts = this.products.filter(p => condition.test(p.name));
+        .filter((r: Review) => r.company_id === this.company.id);
+    },
+    
+    token() {
+      return localStorage.getItem("proddx_token") || "";
     }
   },
 
   async mounted() {
     const promises = [];
 
+    if (!this.company.name) {
+      const userId = JSON.parse(atob(this.token.split(".")[1])).id;
+      await this.$store.dispatch("companies/loadCompany", {
+        id: userId,
+        token: this.token
+      }).catch(error => this.$toast.error(error));
+    }
+    
     if (!this.products.length) {
-      promises.push(this.$store.dispatch("products/loadProducts", "1"));
+      promises.push(this.$store.dispatch("products/loadProducts", { companyId: this.company.id, token: this.token }));
     }
     if (!this.reviews.length) {
-      promises.push(this.$store.dispatch("reviews/loadReviews", "1"));
+      promises.push(this.$store.dispatch("reviews/loadReviews", { companyId: this.company.id, token: this.token }));
     }
 
     try {
       await Promise.all(promises);
-      this.filteredProducts = this.products.slice();
     } catch (error) {
       console.error(error);
       this.$toast.error("Failed to load data!");
@@ -143,8 +159,16 @@ export default Vue.extend({
   },
 
   methods: {
+    filterByName(products: Product[]) {
+      if (this.productName) {
+        const condition = new RegExp(this.productName, "i");
+        return products.filter((p) => condition.test(p.name));
+      }
+      return products;
+    },
+
     numberOfProductReviews(id: string) {
-      return this.reviews.filter((r) => r.product === id).length;
+      return this.reviews.filter((r) => r.product_id === id).length;
     },
 
     showProductDetails(p: Product) {
@@ -162,10 +186,23 @@ export default Vue.extend({
     closeProductModal() {
       this.currentProduct = Object.assign(new Product("", "", "", "", 0), this.defaultProduct);
       this.displayProductModal = false;
+      this.copied = false;
     },
 
     enableTextField() {
       this.disabled = false;
+    },
+
+    copyToClipboard() {
+      const textarea = document.createElement("textarea");
+      textarea.textContent = this.currentProduct.feedback_url;
+      textarea.style.position = "fixed";
+      document.getElementById("modal")?.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.getElementById("modal")?.removeChild(textarea);
+      this.copied = true;
+      setTimeout(() => { this.copied = false }, 2000);
     },
 
     async save() {
@@ -177,10 +214,17 @@ export default Vue.extend({
         return;
       }
 
-      this.currentProduct.company = "1";
+      this.currentProduct.company_id = this.company.id;
+      let action = "products/insertProduct";
+      if (this.currentProduct.id) {
+        action = "products/editProduct";
+      }
 
       try {
-        await this.$store.dispatch("products/insertProduct", this.currentProduct);
+        await this.$store.dispatch(action, {
+          data: this.currentProduct,
+          token: this.token
+        });
         this.$toast.success("Successful!");
       } catch (error) {
         console.error(error);
@@ -249,14 +293,18 @@ h3 {
 }
 
 .image-container {
-  @apply flex justify-center mb-4;
+  @apply flex justify-center mb-4 relative;
 }
 
-.qr-code {
-  @apply w-36 h-36 bg-gray-200;
+.image-container:hover #download-btn {
+  @apply visible;
 }
 
 .url {
-  @apply flex justify-center items-center gap-4 mb-4;
+  @apply relative flex justify-center items-center gap-4 mb-4;
+}
+
+.copied {
+  @apply absolute right-0 bottom-4 p-1 text-sm text-white bg-blue-600 rounded transition;
 }
 </style>
