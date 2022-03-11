@@ -32,6 +32,14 @@ export default Vue.extend({
     tabName: "Overview"
   }),
 
+  mounted() {
+    if (!localStorage.getItem("proddx_token")) {
+      this.$router.push({
+        path: "/"
+      });
+    }
+  },
+
   methods: {
     tabChanged(e: number) {
       switch (e) {

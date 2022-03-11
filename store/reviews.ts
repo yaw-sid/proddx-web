@@ -6,7 +6,7 @@ export const state = () => ({
 });
 
 export const mutations = {
-    updateReviews(state: any, payload: Review) {
+    updateReviews(state: any, payload: Review[]) {
         state.reviews = payload;
     },
 

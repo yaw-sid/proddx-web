@@ -47,14 +47,15 @@ export default Vue.extend({
       this.$emit("changeTab", this.currentTab);
     },
 
-    async logout() {
+    logout() {
       try {
-        await this.$store.dispatch("companies/logout");
         localStorage.removeItem("proddx_token");
-        /* this.$router.push({
+        this.$store.commit("companies/updateCompany", {});
+        this.$store.commit("products/updateProducts", []);
+        this.$store.commit("reviews/updateReviews", []);
+        this.$router.push({
           path: "/"
-        }); */
-        location.pathname = "/";
+        });
       } catch (error) {
         console.error(error);
         this.$toast.error("Failed to logout!");
