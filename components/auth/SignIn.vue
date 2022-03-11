@@ -77,10 +77,9 @@ export default Vue.extend({
         const response = await signIn(data);
         localStorage.setItem("proddx_token", response.data.token);
         this.close();
-        /* this.$router.push({
+        this.$router.push({
           path: "/dashboard"
-        }); */
-        location.pathname = "/dashboard";
+        });
       } catch (error) {
         console.error(error);
         this.$toast.error("Failed to sign in! Please try again");
